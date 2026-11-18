@@ -18,21 +18,37 @@ export default function Dashboard() {
   const [creating, setCreating] = useState(false);
   const [modalError, setModalError] = useState('');
 
-  const fetchGroups = async () => {
+  const fetchGroups = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const { data } = await api.get('/groups');
       setGroups(data);
       setError('');
     } catch (err) {
-      setError('No se pudieron cargar tus grupos. Verificá la conexión con el servidor.');
+      if (!silent) {
+        setError('No se pudieron cargar tus grupos. Verificá la conexión con el servidor.');
+      }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchGroups();
+    fetchGroups(false);
+
+    const intervalId = setInterval(() => {
+      if (!document.hidden) {
+        fetchGroups(true);
+      }
+    }, 12000);
+
+    const handleFocus = () => fetchGroups(true);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   const handleCreateGroup = async (e) => {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -87,9 +87,9 @@ export default function GroupDetail() {
   const [payLoading, setPayLoading] = useState(false);
   const [payError, setPayError] = useState('');
 
-  const loadAllData = async () => {
+  const loadAllData = useCallback(async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const [groupRes, summaryRes, expensesRes, paymentsRes] = await Promise.all([
         api.get(`/groups/${groupId}`),
         api.get(`/groups/${groupId}/summary`),
@@ -102,18 +102,34 @@ export default function GroupDetail() {
       setPayments(paymentsRes.data);
       setPageError('');
     } catch (err) {
-      setPageError(
-        err.response?.data?.message ||
-          'No tenés acceso a este grupo o el grupo no existe.'
-      );
+      if (!silent) {
+        setPageError(
+          err.response?.data?.message ||
+            'No tenés acceso a este grupo o el grupo no existe.'
+        );
+      }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
-  };
+  }, [groupId]);
 
   useEffect(() => {
-    loadAllData();
-  }, [groupId]);
+    loadAllData(false);
+
+    const intervalId = setInterval(() => {
+      if (!document.hidden) {
+        loadAllData(true);
+      }
+    }, 12000);
+
+    const handleFocus = () => loadAllData(true);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [loadAllData]);
 
   // --- Acciones de Grupo y Miembros ---
   const handleAddMember = async (e) => {
@@ -124,7 +140,7 @@ export default function GroupDetail() {
       await api.post(`/groups/${groupId}/members`, { email: memberEmail });
       setMemberEmail('');
       setShowMemberModal(false);
-      await loadAllData();
+      await loadAllData(true);
     } catch (err) {
       setMemberError(err.response?.data?.message || 'No se pudo agregar al integrante.');
     } finally {
@@ -235,7 +251,7 @@ export default function GroupDetail() {
         await api.post(`/groups/${groupId}/expenses`, payload);
       }
       setShowExpenseModal(false);
-      await loadAllData();
+      await loadAllData(true);
     } catch (err) {
       setExpError(err.response?.data?.message || 'Error al guardar el gasto.');
     } finally {
@@ -249,7 +265,7 @@ export default function GroupDetail() {
 
     try {
       await api.delete(`/groups/${groupId}/expenses/${expenseId}`);
-      await loadAllData();
+      await loadAllData(true);
     } catch (err) {
       alert(err.response?.data?.message || 'No se pudo eliminar el gasto.');
     }
@@ -281,7 +297,7 @@ export default function GroupDetail() {
       });
       setShowPaymentModal(false);
       setActiveTab('payments');
-      await loadAllData();
+      await loadAllData(true);
     } catch (err) {
       setPayError(err.response?.data?.message || 'Error al registrar el pago.');
     } finally {
@@ -857,7 +873,7 @@ export default function GroupDetail() {
 
             {payError && (
               <div className="alert alert-error">
-                <AlertCircle size={18} />
+                <AlertCircle size={18} style={{ flexShrink: 0, marginTop: 2 }} />
                 <span>{payError}</span>
               </div>
             )}
@@ -954,7 +970,7 @@ export default function GroupDetail() {
 
             {memberError && (
               <div className="alert alert-error">
-                <AlertCircle size={18} />
+                <AlertCircle size={18} style={{ flexShrink: 0, marginTop: 2 }} />
                 <span>{memberError}</span>
               </div>
             )}
