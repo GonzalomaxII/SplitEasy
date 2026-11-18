@@ -1,9 +1,9 @@
-# Etapa 1: Compilar el proyecto con Maven
-FROM eclipse-temurin:25-jdk AS build
+# Etapa 1: Compilar el proyecto con Maven preinstalado
+FROM maven:3.9-eclipse-temurin-25 AS build
 WORKDIR /app
-COPY . .
-RUN chmod +x mvnw
-RUN ./mvnw clean package -DskipTests
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
 
 # Etapa 2: Ejecutar el .jar optimizando la memoria para Render
 FROM eclipse-temurin:25-jre
