@@ -38,7 +38,7 @@ El sistema sigue una arquitectura **Cliente-Servidor desacoplada**, organizada e
 * **Lucide React & CSS3:** Diseño fintech moderno de alto contraste y adaptable a dispositivos móviles.
 
 ### Backend
-* **Java 21 + Spring Boot:** API RESTful estructurada por responsabilidades.
+* **Java 25 + Spring Boot:** API RESTful estructurada por responsabilidades.
 * **Spring Security + JJWT:** Seguridad sin estado, filtros de autenticación JWT y políticas CORS configurables.
 * **Spring Data JPA / Hibernate:** Mapeo objeto-relacional y gestión transaccional.
 * **Jakarta Bean Validation:** Validación declarativa de DTOs de entrada.
@@ -107,7 +107,7 @@ spliteasy/
 ## Instalación y Ejecución en Local
 
 ### Requisitos Previos
-* **Java JDK 21** (o superior) y **Maven**
+* **Java JDK 25** (o superior) y **Maven**
 * **Node.js 18+** y **npm**
 * Una instancia de **PostgreSQL** (local o en Neon)
 
